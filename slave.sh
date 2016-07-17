@@ -2,5 +2,5 @@
 export SPARK_HOME=$1
 shift
 module load java
-"$SPARK_HOME/sbin/start-slave.sh" $@
+"$SPARK_HOME/sbin/run-slave.sh" $@
 wait
