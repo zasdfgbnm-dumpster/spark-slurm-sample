@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#SBATCH --job-name=spark-master
+#SBATCH --job-name=spark-job
 #SBATCH --nodes=1
 #SBATCH --ntasks=2
 #SBATCH --mem-per-cpu=4gb
@@ -10,7 +10,7 @@ export SPARK_HOME="/ufrc/roitberg/qasdfgtyuiop/spark-dist"
 jobscript="$SPARK_HOME/examples/src/main/python/pi.py"
 jobargs="20000"
 max_slaves=50
-min_slaves=20
+min_slaves=4
 cores_slave=8
 mem_slave=6gb
 slave_time=100:00:00
