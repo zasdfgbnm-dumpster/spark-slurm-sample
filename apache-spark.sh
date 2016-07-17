@@ -11,8 +11,7 @@ export SPARK_HOME="/ufrc/roitberg/qasdfgtyuiop/spark-dist"
 jobscript="$SPARK_HOME/examples/src/main/python/pi.py"
 jobargs="20000"
 max_slaves=50
-min_slaves=20
-cores_slave=8
+cores_slave=1
 mem_slave=6gb
 slave_time=100:00:00
 
@@ -32,14 +31,7 @@ ssh gator4 sbatch --array=1-$max_slaves --mem=$mem_slave --nodes=1 --ntasks=$cor
     "$SLURM_SUBMIT_DIR/slave.sh" "$SPARK_HOME" "$master" --cores $cores_slave --memory $mem_slave
 )
 slave_jobid=$(echo "$slave_jobid"|tr -d 'a-zA-Z ')
-echo "slave jobs submited, waiting for enough slaves..."
-
-# wait until >=$min_slaves number of slaves has started
-get_runs() {
-    squeue -j $1|awk '{ print $5 }'|grep R|wc -l
-}
-while [ $(get_runs $slave_jobid) -lt $min_slaves ]; do sleep 60; done
-echo "enough slaves started, now run the job script"
+echo "slave slurm jobs submited, waiting for slaves to be scheduled..."
 
 # run jobscript
 "$SPARK_HOME/bin/spark-submit" --master "$master" "$jobscript" "$jobargs"
