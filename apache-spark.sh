@@ -4,6 +4,7 @@
 #SBATCH --ntasks=2
 #SBATCH --mem-per-cpu=4gb
 #SBATCH --time=100:00:00
+#SBATCH --output=spark-job.out
 
 # settings
 export SPARK_HOME="/ufrc/roitberg/qasdfgtyuiop/spark-dist"
@@ -23,22 +24,26 @@ module load java
 
 # get the link for master
 master="spark://$HOSTNAME:7077"
+echo "master started"
 
 # submit jobs for slaves
 slave_jobid=$(
-sbatch --array=1-$max_slaves --mem=$mem_slave --nodes=1 --ntasks=$cores_slave --time=$slave_time \
-    "$SPARK_HOME/sbin/run-slave.sh" --host "$master" --cores=$cores_slave --memory $mem_slave
+ssh gator4 sbatch --array=1-$max_slaves --mem=$mem_slave --nodes=1 --ntasks=$cores_slave --time=$slave_time --output="$SLURM_SUBMIT_DIR/slave-%a.out" \
+    "$SLURM_SUBMIT_DIR/slave.sh" "$SPARK_HOME" "$master" --cores $cores_slave --memory $mem_slave
 )
 slave_jobid=$(echo "$slave_jobid"|tr -d 'a-zA-Z ')
+echo "slave jobs submited, waiting for enough slaves..."
 
 # wait until >=$min_slaves number of slaves has started
 get_runs() {
     squeue -j $1|awk '{ print $5 }'|grep R|wc -l
 }
-while [ $(get_runs $slave_jobid) < $min_slaves ]; do sleep 60; done
+while [ $(get_runs $slave_jobid) -lt $min_slaves ]; do sleep 60; done
+echo "enough slaves started, now run the job script"
 
 # run jobscript
 "$SPARK_HOME/bin/spark-submit" --master "$master" "$jobscript" "$jobargs"
+echo "job script finish, now kill slaves"
 
 # kill slaves
-scancel $slave_jobid
+ssh gator4 scancel $slave_jobid
