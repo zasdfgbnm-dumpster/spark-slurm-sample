@@ -16,7 +16,7 @@ mem_slave=6gb
 slave_time=100:00:00
 
 # initialize environment
-module load java/1.8.0_31
+module load java
 
 # run master
 "$SPARK_HOME/sbin/start-master.sh"
