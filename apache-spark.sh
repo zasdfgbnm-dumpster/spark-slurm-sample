@@ -2,7 +2,7 @@
 #SBATCH --job-name=spark-job
 #SBATCH --nodes=1
 #SBATCH --ntasks=2
-#SBATCH --mem-per-cpu=4gb
+#SBATCH --mem=4gb
 #SBATCH --time=100:00:00
 #SBATCH --output=spark-job.out
 
@@ -10,9 +10,10 @@
 export SPARK_HOME="/ufrc/roitberg/qasdfgtyuiop/spark-dist"
 jobscript="$SPARK_HOME/examples/src/main/python/pi.py"
 jobargs="20000"
-max_slaves=50
-cores_slave=1
-mem_slave=6gb
+max_slaves=200
+cores_slave=2
+mem_driver=3G
+mem_slave=16G
 slave_time=100:00:00
 
 # initialize environment
@@ -34,7 +35,7 @@ slave_jobid=$(echo "$slave_jobid"|tr -d 'a-zA-Z ')
 echo "slave slurm jobs submited, waiting for slaves to be scheduled..."
 
 # run jobscript
-"$SPARK_HOME/bin/spark-submit" --master "$master" "$jobscript" "$jobargs"
+"$SPARK_HOME/bin/spark-submit" --master "$master" --driver-memory $mem_driver --executor-memory $mem_slave "$jobscript" "$jobargs"
 echo "job script finish, now kill slaves"
 
 # kill slaves
