@@ -7,7 +7,7 @@
 #SBATCH --output=spark-job.out
 
 # settings
-export SPARK_HOME="/ufrc/roitberg/qasdfgtyuiop/spark-dist"
+export SPARK_HOME="/ufrc/roitberg/qasdfgtyuiop/bin/spark"
 jobscript="$SPARK_HOME/examples/src/main/python/pi.py"
 jobargs="20000"
 max_slaves=200
@@ -29,7 +29,7 @@ echo "master started"
 # submit jobs for slaves
 slave_jobid=$(
 ssh gator4 sbatch --array=1-$max_slaves --mem=$mem_slave --nodes=1 --ntasks=$cores_slave --time=$slave_time --output="$SLURM_SUBMIT_DIR/slave-%a.out" \
-    "$SLURM_SUBMIT_DIR/slave.sh" "$SPARK_HOME" "$master" --cores $cores_slave --memory $mem_slave
+    "$SLURM_SUBMIT_DIR/slave.sh" "$master" --cores $cores_slave --memory $mem_slave
 )
 slave_jobid=$(echo "$slave_jobid"|tr -d 'a-zA-Z ')
 echo "slave slurm jobs submited, waiting for slaves to be scheduled..."
