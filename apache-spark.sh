@@ -14,6 +14,7 @@ max_slaves=200
 cores_slave=2
 mem_driver=3G
 mem_slave=16G
+mem_slave_slurm=17G
 slave_time=100:00:00
 
 # initialize environment
@@ -28,14 +29,14 @@ echo "master started"
 
 # submit jobs for slaves
 slave_jobid=$(
-ssh gator4 sbatch --array=1-$max_slaves --mem=$mem_slave --nodes=1 --ntasks=$cores_slave --time=$slave_time --output="$SLURM_SUBMIT_DIR/slave-%a.out" \
-    "$SLURM_SUBMIT_DIR/slave.sh" "$master" --cores $cores_slave --memory $mem_slave
+ssh gator4 sbatch --array=1-$max_slaves --mem=$mem_slave_slurm --nodes=1 --ntasks=$cores_slave --time=$slave_time --output="$SLURM_SUBMIT_DIR/slave-%a.out" \
+    "$SLURM_SUBMIT_DIR/slave.sh" "$SPARK_HOME" "$master" --cores $cores_slave --memory $mem_slave
 )
 slave_jobid=$(echo "$slave_jobid"|tr -d 'a-zA-Z ')
 echo "slave slurm jobs submited, waiting for slaves to be scheduled..."
 
 # run jobscript
-"$SPARK_HOME/bin/spark-submit" --master "$master" --driver-memory $mem_driver --executor-memory $mem_slave "$jobscript" "$jobargs"
+"$SPARK_HOME/bin/spark-submit" --master "$master" --driver-memory $mem_driver --executor-memory $mem_slave "$jobscript" $jobargs
 echo "job script finish, now kill slaves"
 
 # kill slaves
